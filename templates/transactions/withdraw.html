@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}Withdraw Money - Online Banking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0">Withdraw Money</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="amount" name="amount" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning text-white">Withdraw Money</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <strong>Note:</strong> In a real banking system, this would connect to an ATM or withdrawal service. For this demo, withdrawals are immediate.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

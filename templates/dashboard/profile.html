@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile - Online Banking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Account Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4 mb-md-0">
+                        <div class="avatar-placeholder bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
+                            {{ user.username[:1] }}
+                        </div>
+                        <h5>{{ user.username }}</h5>
+                        <p class="text-muted">
+                            {% if user.is_admin %}
+                                Administrator
+                            {% else %}
+                                Customer
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Email Address</h6>
+                            <p class="form-control-plaintext">{{ user.email }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="text-muted">Account Created</h6>
+                            <p class="form-control-plaintext">{{ user.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <hr>
+                        <div class="alert alert-info">
+                            <h6>Password Security</h6>
+                            <p class="mb-0">For security reasons, password changes must be handled through a separate process. Please contact customer support for assistance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

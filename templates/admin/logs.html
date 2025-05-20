@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Logs - Online Banking{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Admin Logs</h2>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">System Logs</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.id }}</td>
+                            <td>{{ log.admin_id }}</td>
+                            <td>{{ log.action }}</td>
+                            <td>
+                                {% if log.description %}
+                                    {{ log.description }}
+                                {% else %}
+                                    <small class="text-muted">No description</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No logs found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}Transaction History - Online Banking{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Transaction History</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date & Time</th>
+                        <th>Details</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.id }}</td>
+                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if transaction.from_account_id == None %}
+                                    <strong>Deposit</strong>
+                                {% elif transaction.to_account_id == None %}
+                                    <strong>Withdrawal</strong>
+                                {% elif account.id == transaction.from_account_id %}
+                                    <strong>Transfer to:</strong> {{ transaction.receiver_name }}
+                                    <br><small class="text-muted">Account: {{ transaction.receiver_account }}</small>
+                                {% else %}
+                                    <strong>Received from:</strong> {{ transaction.sender_name }}
+                                    <br><small class="text-muted">Account: {{ transaction.sender_account }}</small>
+                                {% endif %}
+                                {% if transaction.description %}
+                                    <br><small class="text-muted">Memo: {{ transaction.description }}</small>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ "%.2f"|format(transaction.amount) }}</td>
+                            <td>
+                                {% if transaction.from_account_id == None %}
+                                    <span class="badge bg-success">Credit</span>
+                                {% elif transaction.to_account_id == None %}
+                                    <span class="badge bg-danger">Debit</span>
+                                {% elif account.id == transaction.from_account_id %}
+                                    <span class="badge bg-danger">Debit</span>
+                                {% else %}
+                                    <span class="badge bg-success">Credit</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No transactions found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - Online Banking{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">System Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-info text-white mb-3">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">{{ user_count }}</h3>
+                                <p class="mb-0">Total Users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">₹{{ "%.2f"|format(total_money) }}</h3>
+                                <p class="mb-0">Total Money</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-primary w-100 mb-3">Manage Users</a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('admin_logs') }}" class="btn btn-info text-white w-100 mb-3">View Logs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Recent Transactions</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date & Time</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.id }}</td>
+                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if transaction.from_account_id == None %}
+                                    <span class="badge bg-success">System Deposit</span>
+                                {% else %}
+                                    {{ transaction.sender_name }}
+                                    <br><small class="text-muted">{{ transaction.sender_account }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transaction.to_account_id == None %}
+                                    <span class="badge bg-warning text-dark">Withdrawal</span>
+                                {% else %}
+                                    {{ transaction.receiver_name }}
+                                    <br><small class="text-muted">{{ transaction.receiver_account }}</small>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ "%.2f"|format(transaction.amount) }}</td>
+                            <td>
+                                {% if transaction.description %}
+                                    {{ transaction.description }}
+                                {% else %}
+                                    <small class="text-muted">No description</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No transactions found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
