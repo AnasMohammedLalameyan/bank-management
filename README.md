@@ -14,7 +14,7 @@ A simple online banking system built with Flask, SQLite, and plain HTML/CSS/Java
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/online-banking.git
+git clone https://github.com/AnasMohammedLalameyan/bank-management.git
 cd online-banking
 ```
 
