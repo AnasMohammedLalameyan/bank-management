@@ -39,6 +39,12 @@ def close_db(e=None):
 
 app.teardown_appcontext(close_db)
 
+# Helper function to get transaction type ID
+def get_transaction_type_id(type_name):
+    db = get_db()
+    result = db.execute('SELECT id FROM transaction_types WHERE type_name = ?', (type_name,)).fetchone()
+    return result['id'] if result else None
+
 # Initialize database
 def init_db():
     db = get_db()
@@ -213,12 +219,14 @@ def dashboard():
     # Get user account
     account = get_user_account(user_id)
     
-    # Get recent transactions
+    # Get recent transactions with transaction types
     transactions = db.execute(
         '''SELECT t.*, 
+                tt.type_name,
                 u_from.username as sender_name, 
                 u_to.username as receiver_name
            FROM transactions t
+           JOIN transaction_types tt ON t.transaction_type_id = tt.id
            LEFT JOIN accounts a_from ON t.from_account_id = a_from.id
            LEFT JOIN accounts a_to ON t.to_account_id = a_to.id
            LEFT JOIN users u_from ON a_from.user_id = u_from.id
@@ -237,6 +245,22 @@ def dashboard():
 def profile():
     user = get_current_user()
     return render_template('dashboard/profile.html', user=user)
+
+# New route to demonstrate the view
+@app.route('/account_summary')
+@login_required
+def account_summary():
+    user_id = session['user_id']
+    db = get_db()
+    
+    # Use the account_summary view
+    summary = db.execute(
+        '''SELECT * FROM account_summary 
+           WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ?)''',
+        (user_id,)
+    ).fetchone()
+    
+    return render_template('dashboard/account_summary.html', summary=summary)
 
 # Transaction routes
 @app.route('/transfer', methods=('GET', 'POST'))
@@ -291,12 +315,15 @@ def transfer():
                     (amount, recipient['id'])
                 )
                 
+                # Get transaction type ID
+                transfer_type_id = get_transaction_type_id('TRANSFER')
+                
                 # Record transaction
                 db.execute(
                     '''INSERT INTO transactions 
-                       (from_account_id, to_account_id, amount, description, created_at)
-                       VALUES (?, ?, ?, ?, ?)''',
-                    (sender_account['id'], recipient['id'], amount, description, datetime.now())
+                       (from_account_id, to_account_id, amount, transaction_type_id, description, created_at)
+                       VALUES (?, ?, ?, ?, ?, ?)''',
+                    (sender_account['id'], recipient['id'], amount, transfer_type_id, description, datetime.now())
                 )
                 
                 db.execute('COMMIT')
@@ -339,12 +366,15 @@ def deposit():
                     (amount, account['id'])
                 )
                 
+                # Get transaction type ID
+                deposit_type_id = get_transaction_type_id('DEPOSIT')
+                
                 # Record transaction (deposit has no sender)
                 db.execute(
                     '''INSERT INTO transactions 
-                       (from_account_id, to_account_id, amount, description, created_at)
-                       VALUES (NULL, ?, ?, ?, ?)''',
-                    (account['id'], amount, 'Deposit', datetime.now())
+                       (from_account_id, to_account_id, amount, transaction_type_id, description, created_at)
+                       VALUES (NULL, ?, ?, ?, ?, ?)''',
+                    (account['id'], amount, deposit_type_id, 'Deposit', datetime.now())
                 )
                 
                 db.commit()
@@ -388,12 +418,15 @@ def withdraw():
                     (amount, account['id'])
                 )
                 
+                # Get transaction type ID
+                withdrawal_type_id = get_transaction_type_id('WITHDRAWAL')
+                
                 # Record transaction (withdrawal has no recipient)
                 db.execute(
                     '''INSERT INTO transactions 
-                       (from_account_id, to_account_id, amount, description, created_at)
-                       VALUES (?, NULL, ?, ?, ?)''',
-                    (account['id'], amount, 'Withdrawal', datetime.now())
+                       (from_account_id, to_account_id, amount, transaction_type_id, description, created_at)
+                       VALUES (?, NULL, ?, ?, ?, ?)''',
+                    (account['id'], amount, withdrawal_type_id, 'Withdrawal', datetime.now())
                 )
                 
                 db.commit()
@@ -416,14 +449,16 @@ def transaction_history():
     # Get user account
     account = get_user_account(user_id)
     
-    # Get all transactions
+    # Get all transactions with transaction types
     transactions = db.execute(
         '''SELECT t.*, 
+                tt.type_name,
                 u_from.username as sender_name, 
                 u_to.username as receiver_name,
                 a_from.account_number as sender_account,
                 a_to.account_number as receiver_account
            FROM transactions t
+           JOIN transaction_types tt ON t.transaction_type_id = tt.id
            LEFT JOIN accounts a_from ON t.from_account_id = a_from.id
            LEFT JOIN accounts a_to ON t.to_account_id = a_to.id
            LEFT JOIN users u_from ON a_from.user_id = u_from.id
@@ -453,11 +488,13 @@ def admin_dashboard():
     # Get recent transactions
     transactions = db.execute(
         '''SELECT t.*, 
+                tt.type_name,
                 u_from.username as sender_name, 
                 u_to.username as receiver_name,
                 a_from.account_number as sender_account,
                 a_to.account_number as receiver_account
            FROM transactions t
+           JOIN transaction_types tt ON t.transaction_type_id = tt.id
            LEFT JOIN accounts a_from ON t.from_account_id = a_from.id
            LEFT JOIN accounts a_to ON t.to_account_id = a_to.id
            LEFT JOIN users u_from ON a_from.user_id = u_from.id
@@ -475,12 +512,8 @@ def admin_dashboard():
 @admin_required
 def admin_users():
     db = get_db()
-    users = db.execute(
-        '''SELECT u.*, a.account_number, a.balance 
-           FROM users u
-           JOIN accounts a ON u.id = a.user_id
-           ORDER BY u.id'''
-    ).fetchall()
+    # Use the account_summary view for admin users page
+    users = db.execute('SELECT * FROM account_summary ORDER BY account_id').fetchall()
     
     return render_template('admin/users.html', users=users)
 
